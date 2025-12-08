@@ -4,7 +4,6 @@ from scipy.io import wavfile
 from sklearn.linear_model import Ridge
 import os
 
-# Unified configuration
 OUTPUT_DIR = "demo_assets/part0"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -37,7 +36,6 @@ class AudioInpaintingFinal:
     def load_data(self):
         self.sr, data = wavfile.read(self.filename)
         if len(data.shape) > 1: data = data.mean(axis=1)
-        # 归一化到 -1.0 到 1.0 (这对保存 wav 很重要)
         data = data.astype(np.float32)
         if np.max(np.abs(data)) > 0:
             data = data / np.max(np.abs(data))
@@ -58,33 +56,26 @@ class AudioInpaintingFinal:
         return self.gap_range
 
     def _train_predict_with_residuals(self, context_X, context_y, steps):
-        """
-        训练并计算残差 (Residuals)
-        """
+        """Train and compute residuals for texture injection"""
         model = Ridge(alpha=0.5)
         model.fit(context_X, context_y)
         
-        # 1. 计算在训练集上的误差 (Residuals)
         y_train_pred = model.predict(context_X)
         residuals = context_y - y_train_pred
-        # 计算残差的标准差 (高频纹理的强度)
         noise_std = np.std(residuals)
         
-        # 2. 逐步预测
         current_input = context_X[-1].copy()
         predictions = []
         
         for _ in range(steps):
             pred = model.predict(current_input.reshape(1, -1))[0]
             
-            # --- 改进点：注入纹理 ---
-            # 我们加上一点点随机噪声，模拟高频细节
+            # Inject texture with random noise
             noise = np.random.normal(0, noise_std)
             pred_with_noise = pred + noise
             
             predictions.append(pred_with_noise)
             
-            # 更新输入 (用带噪声的值更新，这样纹理会传递下去)
             current_input = np.roll(current_input, -1)
             current_input[-1] = pred_with_noise
             
@@ -94,7 +85,6 @@ class AudioInpaintingFinal:
         gap_start, gap_end = self.gap_range
         gap_len = gap_end - gap_start
         
-        # 构建数据集
         def make_dataset(data):
             X, y = [], []
             for i in range(len(data) - self.order):
@@ -108,33 +98,40 @@ class AudioInpaintingFinal:
         right_context = self.signal[gap_end:][::-1]
         X_right, y_right = make_dataset(right_context)
         
-        # Predict (use texture-enhanced prediction logic based on flag)
         pred_fwd = self._train_predict_with_residuals(X_left, y_left, gap_len)
-        pred_bwd = self._train_predict_with_residuals(X_right, y_right, gap_len)[::-1] 
+        pred_bwd = self._train_predict_with_residuals(X_right, y_right, gap_len)[::-1]
 
-        # Cross-fading
         weights = np.linspace(1, 0, gap_len)
         restored_gap = pred_fwd * weights + pred_bwd * (1 - weights)
         
         self.restored_signal = self.signal.copy()
         self.restored_signal[gap_start:gap_end] = restored_gap
         
+        # Calculate SNR
+        numerator = np.sum(self.signal ** 2)
+        denominator = np.sum((self.signal - self.restored_signal) ** 2)
+        snr = 10 * np.log10(numerator / (denominator + 1e-10))
+        
+        gap_original = self.signal[gap_start:gap_end]
+        local_num = np.sum(gap_original ** 2)
+        local_den = np.sum((gap_original - restored_gap) ** 2)
+        local_snr = 10 * np.log10(local_num / (local_den + 1e-10))
+        
+        print(f"📊 SNR: {snr:.2f} dB, Local SNR: {local_snr:.2f} dB")
+        
         return self.restored_signal
 
     def save_results(self):
         """Save audio files and spectrograms"""
-        # Save corrupted audio
         corrupted_audio = self.signal.copy()
         gs, ge = self.gap_range
         corrupted_audio[gs:ge] = 0
         save_wav(corrupted_audio, self.sr, "ar_texture_corrupted.wav")
         save_spectrogram(corrupted_audio, self.sr, "spec_ar_texture_corrupted.png")
         
-        # Save restored audio
         save_wav(self.restored_signal, self.sr, "ar_texture_restored.wav")
         save_spectrogram(self.restored_signal, self.sr, "spec_ar_texture_restored.png")
         
-        # Save original
         save_wav(self.signal, self.sr, "ar_texture_original.wav")
         save_spectrogram(self.signal, self.sr, "spec_ar_texture_original.png")
 
@@ -143,7 +140,6 @@ class AudioInpaintingFinal:
         plt.plot(self.t, self.signal, 'gray', alpha=0.3, label='Ground Truth')
         
         gs, ge = self.gap_range
-        # 画出修复部分
         plt.plot(self.t[gs:ge], self.restored_signal[gs:ge], 'r-', linewidth=1, label='Restored (with Texture)')
         
         plt.axvspan(self.t[gs], self.t[ge], color='red', alpha=0.1)
@@ -153,9 +149,7 @@ class AudioInpaintingFinal:
         print(f"📊 Waveform visualization saved")
         plt.show()
 
-# --- 🏃‍♂️ Run ---
 if __name__ == "__main__":
-    # Unified parameters
     DURATION = 0.05
     GAP_RATIO = 0.2
     

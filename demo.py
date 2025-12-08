@@ -23,7 +23,7 @@ MEDIA_FILES = {
         },
         "🧠 Deep Learning (U-Net)": {
             "audio": "demo_assets/part1/dl_long_restored.wav",
-            "image": "demo_assets/part1/spec_dl_restored.png"
+            "image": "demo_assets/part1/dl_long_restored_spec.png"
         },
         "✅ Ground Truth": {
             "audio": "demo_assets/part1/original.wav",
@@ -68,7 +68,7 @@ def get_media_paths(scenario, model_name):
     audio_path = data.get("audio")
     image_path = data.get("image")
     
-    # 检查文件是否存在，不存在返回 None (Gradio 会显示空白)
+    # Check file existence, return None if missing (Gradio will show blank)
     final_audio = audio_path if audio_path and os.path.exists(audio_path) else None
     final_image = image_path if image_path and os.path.exists(image_path) else None
     return final_audio, final_image
@@ -101,7 +101,6 @@ with gr.Blocks() as demo:
                     audio_1 = gr.Audio(label="👂 Audio preview", type="filepath")
                     img_1 = gr.Image(label="👁️ Spectrogram (texture details)", type="filepath", interactive=False)
 
-            # 更新逻辑
             def update_part1(model):
                 comments = {
                     "🤕 Damaged (Random Mask)": (
@@ -134,7 +133,6 @@ with gr.Blocks() as demo:
                 a_path, i_path = get_media_paths("part1", model)
                 return a_path, comments.get(model, ""), i_path
             
-            # 绑定事件：输出增加了一个 img_1
             radio_1.change(update_part1, inputs=radio_1, outputs=[audio_1, desc_1, img_1])
 
         # --- TAB 2: long gap ---
@@ -152,7 +150,6 @@ with gr.Blocks() as demo:
                     audio_2 = gr.Audio(label="👂 Audio preview", type="filepath")
                     img_2 = gr.Image(label="👁️ Spectrogram (hallucination ability)", type="filepath", interactive=False)
             
-            # 更新逻辑
             def update_part2(model):
                 comments = {
                     "🕳️ Damaged (2s Gap)": (
@@ -190,6 +187,6 @@ with gr.Blocks() as demo:
             # Bind events
             radio_2.change(update_part2, inputs=radio_2, outputs=[audio_2, desc_2, img_2])
 
-# 启动
-# demo.launch() # 普通启动
-demo.launch(share=True) # 生成一个公开链接，可以发给别人看 (72小时有效)
+# Launch
+# demo.launch()  # Normal launch
+demo.launch(share=True)  # Generate a public link, sharable with others (72-hour validity)

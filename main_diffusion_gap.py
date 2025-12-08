@@ -45,21 +45,16 @@ class RiffusionFairInpainter:
         waveform, sr = torchaudio.load(INPUT_FILE)
         if waveform.shape[0] > 1: waveform = torch.mean(waveform, dim=0, keepdim=True)
         
-        # 1. 转图片
         log_spec = self.wav_to_spectrogram(waveform)
         image = self.spectrogram_to_image(log_spec)
         
-        # 2. 自动生成 Mask (基于图片的黑色区域)
-        # 我们的缺口是 0，转成 Log 谱图是极小值 (-100)，归一化后是黑色 (0)
-        # 将图片转灰度，找像素值极低的地方
+        # Auto-generate mask based on black regions
         gray = image.convert("L")
-        # 阈值设为 10 (0-255)，捕捉纯黑区域
         mask_data = np.array(gray)
         mask_array = np.where(mask_data < 10, 255, 0).astype(np.uint8) 
         mask_image = Image.fromarray(mask_array)
         
-        # 3. Diffusion Inpainting
-        print("☢️ Riffusion 正在检测并修复黑色缺口...")
+        print("☢️ Riffusion is detecting and repairing the black gap...")
         img_resized = image.resize((512, 512))
         mask_resized = mask_image.resize((512, 512))
         
@@ -73,25 +68,23 @@ class RiffusionFairInpainter:
         
         inpainted_image = inpainted_resized.resize(image.size)
         
-        # 4. 转回音频
+        # Convert back to audio
         linear_spec = self.image_to_spectrogram(inpainted_image)
         griffin_lim = torchaudio.transforms.GriffinLim(n_fft=2048, hop_length=512, power=1.0).to(self.device)
         restored_waveform = griffin_lim(linear_spec.unsqueeze(0))
         
-        # 保存
+        # Save
         path = os.path.join(OUTPUT_DIR, "fixed_riffusion_gap.wav")
         sig = restored_waveform.cpu().squeeze().numpy()
         sig = np.clip(sig, -1.0, 1.0)
         wavfile.write(path, sr, (sig * 32767).astype(np.int16))
         
-        # 统一画图 (使用 plt.specgram 而不是 SD 的图)
         plt.figure(figsize=(10, 4))
         plt.specgram(sig, NFFT=1024, Fs=sr, noverlap=512, cmap='inferno')
         plt.axis('off')
         plt.tight_layout(pad=0)
         plt.savefig(os.path.join(OUTPUT_DIR, "spec_riffusion_gap.png"), bbox_inches='tight', pad_inches=0)
-        print("💾 Riffusion 修复完毕")
+        print("💾 Riffusion restoration complete")
 
-# 运行
 lab = RiffusionFairInpainter()
 lab.inpaint()

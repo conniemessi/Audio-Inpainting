@@ -36,7 +36,7 @@ An interactive web demo is available here: [https://a81cc3f8db098ee59c.gradio.li
   AR-based inpainting for the random-mask setting (Part 1), using automatic gap detection on the U-Net damaged audio.
 
 - `main4_NMF.py`  
-  NMF-based spectrogram inpainting for medium-length gaps on short segments.
+  NMF-based spectrogram inpainting for medium-length gaps on short segments (Part 0).
 
 - `main4_NMF_mask.py`  
   NMF inpainting for the random-mask case (Part 1), operating directly on the U-Net damaged signal.
@@ -48,7 +48,7 @@ An interactive web demo is available here: [https://a81cc3f8db098ee59c.gradio.li
   Spectrogram U-Net training and inference for the random-mask scenario (Part 1). Produces long corrupted/restored audio and comparison spectrograms.
 
 - `main5_UNet_gap.py`  
-  Spectrogram U-Net inpainting for a shorter 2D mask in the STFT domain (local gaps), mainly used for visualization.
+  Spectrogram U-Net inpainting for a shorter 2D mask in the STFT domain (local gaps), mainly used for visualization (Part 2).
 
 - `main_gan_gap.py`  
   GAN-based spectrogram inpainting for the 2-second gap (Part 2), including generator and discriminator architectures.
@@ -159,11 +159,3 @@ You can also access a hosted version of the demo at:
 [https://a81cc3f8db098ee59c.gradio.live](https://a81cc3f8db098ee59c.gradio.live)
 
 > Note: The hosted URL is time-limited (Gradio share links typically expire after 1 week). If it is no longer active, please run `demo.py` locally.
-
----
-
-## 5. Reference
-
-For a detailed mathematical and experimental discussion of all methods, see the LaTeX report (`audio_inpainting_report.tex`) in the parent project directory. It describes the problem formulation, methodology, experimental setup, and conclusions in a scientific writing style, with references to Gaussian Processes, AR/NMF models, U-Net, GANs, and diffusion-based inpainting.
-
-
