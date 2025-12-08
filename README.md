@@ -158,7 +158,7 @@ Each selection shows:
 You can also access a hosted version of the demo at:  
 [https://a81cc3f8db098ee59c.gradio.live](https://a81cc3f8db098ee59c.gradio.live)
 
-> Note: The hosted URL is time-limited (Gradio share links typically expire after 72 hours). If it is no longer active, please run `demo.py` locally.
+> Note: The hosted URL is time-limited (Gradio share links typically expire after 1 week). If it is no longer active, please run `demo.py` locally.
 
 ---
 
