@@ -2,8 +2,8 @@
 
 This repository contains the code for a comparative study of audio inpainting methods, ranging from classical signal processing to modern deep generative models. The accompanying report (`audio_inpainting_report.tex` in the parent directory) analyzes how different methods behave under several corruption scenarios (short gaps, random fragmentation, and long temporal holes).
 
-An interactive web demo is available here: [https://9aa0320025e8de4563.gradio.live](https://9aa0320025e8de4563.gradio.live).
-
+An interactive web demo is available here: https://d97f12e8f5b24f6b6d.gradio.live
+> Note: The hosted URL is time-limited (Gradio share links typically expire after 1 week). If it is no longer active, please run `demo.py` locally.
 ---
 
 ## 1. Repository Structure
@@ -155,7 +155,7 @@ Each selection shows:
 - The corresponding spectrogram image.
 - A short technical commentary summarizing audible and visual differences.
 
-You can also access a hosted version of the demo at:  
-[https://9aa0320025e8de4563.gradio.live](https://9aa0320025e8de4563.gradio.live)
+You can also access a hosted version of the demo at: 
+https://d97f12e8f5b24f6b6d.gradio.live
 
 > Note: The hosted URL is time-limited (Gradio share links typically expire after 1 week). If it is no longer active, please run `demo.py` locally.
